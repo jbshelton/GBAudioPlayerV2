@@ -70,6 +70,5 @@ When you've picked out all the settings you want, hit the **Make the ROM\!** but
 While the encoder is working, the window should stop responding\. This is because the Java encoder takes up the CPU processing the window would otherwise use\. When it's done encoding, the window should be back to normal, and depending on the system you chose, there should be either an **audio\.gb** or **audio\.gbc** file\.
 
 ### Congrats\! You should now have an audio file that's playable on a real Gameboy\!
-At this time, making the ROM for the audio is partially broken, as new data gets appended to the previous ROM even though that isn't supposed to happen\.
-Original GB compatibility is also broken because of differences in audio timing that requires different code to configure properly\.
+At this time original GB compatibility is broken because of differences in audio timing that requires different code to configure properly\.
 Fixes will come soon\!
