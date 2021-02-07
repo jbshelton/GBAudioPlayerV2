@@ -36,23 +36,23 @@ And if you're running Windows, preferrably:
 #### Note for Java encoder
 I had trouble getting the Java program to work on Windows because of how confusing the command line interface is; thus my addition of the "bash" and "\-c"\. If you're on Linux, you can probably remove it. \(Please, do NOT use the Windows Subsystem for Linux on a Windows machine to do this, it was literally impossible for me to use it to get this working\!\) I also had to compile the Java code in WSL using `javac encoder.java -target 8 -source 8` because I couldn't update to a version beyond Java 8\. This shouldn't be a problem on Linux, but if you're on Windows and having issues, try that\.
 
-![Java change 1](/images/Screenshot (97).png)
-![Java change 2](/images/Screenshot (98).png)
+![Java change 1](/images/Screenshot%20(97).png)
+![Java change 2](/images/Screenshot%20(98).png)
 
 ---
 
 #### Launching the GUI
 On Windows, you can either open Powershell and type `python multicoder.py`, or open the latest version of Python IDLE, open the script, and click **Run\->Run Module**\. On Linux, I recommend running it from Python IDLE, because I'm not sure what would happen if you tried to run it from the command line with `python multicoder.py` because of how different the window host system is\. When I tried it with WSL, it just refused to work for whatever reason, so your situation may be different\.
 
-![Launching on Windows](/images/Screenshot (99).png)
+![Launching on Windows](/images/Screenshot%20(99).png)
 
 When the GUI launches, it should look like this:
 
-![Initial GUI screen](/images/Screenshot (100).png)
+![Initial GUI screen](/images/Screenshot%20(100).png)
 
 Click on the **Choose audio file\.\.\.** button, and choose the audio file you want to convert\. It should then look something like this:
 
-![After choosing file](/images/Screenshot (101).png)
+![After choosing file](/images/Screenshot%20(101).png)
 
 ---
 
@@ -65,7 +65,7 @@ Here's an overview of the options you can choose from:
 
 When you've picked out all the settings you want, hit the **Make the ROM\!** button, and make sure to choose the directory of all the code, or else it won't work properly\.
 
-![Directory](/images/Screenshot (102).png)
+![Directory](/images/Screenshot%20(102).png)
 
 While the encoder is working, the window should stop responding\. This is because the Java encoder takes up the CPU processing the window would otherwise use\. When it's done encoding, the window should be back to normal, and depending on the system you chose, there should be either an **audio\.gb** or **audio\.gbc** file\.
 
