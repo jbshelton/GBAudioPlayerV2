@@ -1,14 +1,11 @@
 /*
-Gameboy Audio Encoder 2.0, Java encoder build 2.3, 2/6/2021
+Gameboy Audio Encoder 2.0, Java encoder build 2.5, 2/8/2021
 Made by Jackson Shelton
 See README for OS-dependent(?) changes for command line and
 how to compile for your system.
 
-I plan to update the ideal amplitude choosing algorithm in
-the near future; it's a lot better than my old one (which
-barely worked,) but it still has a small amount of
-clipping/distortion issues because of the amplitude loading
-format.
+Replaced amplitude choosing algorithm with an arguably much
+better fixed lookup table
 */
 
 import java.util.*;
@@ -189,11 +186,153 @@ public class encoder
 				bestindex = i;
 			}
 		}
+		/*
+		2/7/2021- added this code to reduce the amount of noise in the output audio
+		due to the pulse-triggered amplitude being higher than intended when increasing
+		and lower than intended when decreasing
+		2/8/2021- this code is now pretty much obsolete due to fixed LUT having much better
+		output quality
+		*/
+		int idealdiff = 6;
+		int calcsamp1 = 0;
+		int calcsamp2 = 0;
+		int tempadd = 0;
+		boolean firstcheck = false;
+		boolean secondcheck = false;
+		if(bestdiff>0)
+		{
+			if(currsamp>prevsamp)
+			{
+				if(bestdiff>(currsamp-prevsamp))
+				{
+					idealdiff = (currsamp-prevsamp);
+				}
+				for(int i=currsamp; i>(currsamp-idealdiff); i--)
+				{
+					for(int k=0; k<lut[i].size(); k+=2)
+					{
+						for(int h=0; h<lut[prevsamp].size(); h+=2)
+						{
+							if(lut[i].get(k)==lut[prevsamp].get(h))
+							{
+								calcsamp1 = lut[prevsamp].get(h);
+								if(calcsamp1<8)
+								{
+									calcsamp1 = -1*(8-calcsamp1);
+									tempadd = 128;
+								}
+								else
+								{
+									calcsamp1 = calcsamp1-7;
+									tempadd = 127;
+								}
+								calcsamp1 = (int)(((double)tempadd)+(128.0*((((double)calcsamp1)/7.0)*(((double)(lut[prevsamp].get(h+1)+1))/8.0))));
+								firstcheck = true;
+							}
+							if(lut[i].get(k+1)==lut[prevsamp].get(h+1))
+							{
+								calcsamp2 = lut[prevsamp].get(h);
+								if(calcsamp2<8)
+								{
+									calcsamp2 = -1*(8-calcsamp2);
+									tempadd = 128;
+								}
+								else
+								{
+									calcsamp2 = calcsamp2-7;
+									tempadd = 127;
+								}
+								calcsamp2 = (int)(((double)tempadd)+(128.0*((((double)calcsamp2)/7.0)*(((double)(lut[i].get(k+1)))/8.0))));
+								secondcheck = true;
+							}
+							if(firstcheck==true && secondcheck==true)
+							{
+								if(calcsamp1>=calcsamp2 && currsamp>=calcsamp1 && calcsamp1>=prevsamp)//because the current amplitude is greater than the previous one
+								{
+									output[0] = lut[i].get(k);
+									output[1] = lut[prevsamp].get(h+1);
+									return output;
+								}
+								if(calcsamp1<calcsamp2 && currsamp>=calcsamp2 && calcsamp2>=prevsamp)
+								{
+									output[0] = lut[prevsamp].get(h);
+									output[1] = lut[i].get(k+1);
+									return output;
+								}
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				if(bestdiff>(prevsamp-currsamp))
+				{
+					idealdiff = (prevsamp-currsamp);
+				}
+				for(int i=currsamp; i<(currsamp+idealdiff); i++)
+				{
+					for(int k=0; k<lut[i].size(); k+=2)
+					{
+						for(int h=0; h<lut[prevsamp].size(); h+=2)
+						{
+							if(lut[i].get(k)==lut[prevsamp].get(h))
+							{
+								calcsamp1 = lut[prevsamp].get(h);
+								if(calcsamp1<8)
+								{
+									calcsamp1 = -1*(8-calcsamp1);
+									tempadd = 128;
+								}
+								else
+								{
+									calcsamp1 = calcsamp1-7;
+									tempadd = 127;
+								}
+								calcsamp1 = (int)(((double)tempadd)+(128.0*((((double)calcsamp1)/7.0)*(((double)(lut[prevsamp].get(h+1)+1))/8.0))));
+								firstcheck = true;
+							}
+							if(lut[i].get(k+1)==lut[prevsamp].get(h+1))
+							{
+								calcsamp2 = lut[prevsamp].get(h);
+								if(calcsamp2<8)
+								{
+									calcsamp2 = -1*(8-calcsamp2);
+									tempadd = 128;
+								}
+								else
+								{
+									calcsamp2 = calcsamp2-7;
+									tempadd = 127;
+								}
+								calcsamp2 = (int)(((double)tempadd)+(128.0*((((double)calcsamp2)/7.0)*(((double)(lut[i].get(k+1)))/8.0))));
+								secondcheck = true;
+							}
+							if(firstcheck==true && secondcheck==true)
+							{
+								if(calcsamp1<=calcsamp2 && currsamp<=calcsamp1 && calcsamp1<=prevsamp)//because the current amplitude is less than the previous one
+								{
+									output[0] = lut[i].get(k);
+									output[1] = lut[prevsamp].get(h+1);
+									return output;
+								}
+								if(calcsamp1>calcsamp2 && currsamp<=calcsamp2 && calcsamp2<=prevsamp)
+								{
+									output[0] = lut[prevsamp].get(h);
+									output[1] = lut[i].get(k+1);
+									return output;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 		output[0] = lut[currsamp].get(bestindex*2);
 		output[1] = lut[currsamp].get((bestindex*2)+1);
 		return output;
 	}
-	public static int quantize(int sample)
+	public static int quantize(int sample) //GB mode is totally broken because of hardware shit, so unfortunately I can't use this! ):<
 	{
 		if(sample>0 && sample <=16)
 		{
@@ -275,6 +414,7 @@ public class encoder
 		createHeader(system);
 		if(system==1)
 		{
+			/*
 			ArrayList<Integer>[] calcvals = new ArrayList[256];
 			for(int i=0; i<calcvals.length; i++)
 			{
@@ -345,51 +485,164 @@ public class encoder
 					}
 				}
 			}
+			*/
+			/*
+			This section makes the fixed LUT.
+			It sounds a lot better than using the dynamic amplitude algorithm,
+			so I commented THAT out and never used it.
+			Try it if you want, but it'll probably sound like garbage.
+			Maybe add some println()s to see all of the values that the initial
+			algorithm produces, and switch things around to see if you can make
+			any improvements to the output quality.
+			*/
+			int uniquevals = 0;
+			int pulse = 0;
+			int outamp = 0;
+			ArrayList<Integer>[] unsortedvals = new ArrayList[256];
+			for(int i=0; i<256; i++)
+			{
+				unsortedvals[i] = new ArrayList<Integer>();
+			}
+				ArrayList<Integer> uvals = new ArrayList<Integer>();
+			for(int m=1; m<=8; m++)
+			{
+				for(int p=1; p<=14; p++)
+				{
+					if(p<8)
+					{
+						pulse = p-8;
+						outamp = (int)(128.0+((128.0/56.0)*((double)(pulse*m))));
+					}
+					else
+					{
+						pulse = p-7;
+						outamp = (int)(127.0+((128.0/56.0)*((double)(pulse*m))));
+					}
+					if(uvals.indexOf(outamp)==-1)
+					{
+						uniquevals++;
+						uvals.add(outamp);
+					}
+					unsortedvals[outamp].add(p);
+					unsortedvals[outamp].add(m-1);
+				}
+			}
+			ArrayList<Integer>[] variants = new ArrayList[uniquevals];
+			ArrayList<Integer> uniqueamps = new ArrayList<Integer>();
+			for(int i=0; i<uniquevals; i++)
+			{
+				variants[i] = new ArrayList<Integer>();
+			}
+			int min = 512;
+			int mindex = 0;
+			int vindex = 0;
+			while(uvals.size()>0)
+			{
+				for(int k=0; k<uvals.size(); k++)
+				{
+					if(uvals.get(k)<min)
+					{
+						min=uvals.get(k);
+						mindex = k;
+					}
+				}
+				uvals.remove(mindex);
+				mindex = 0;
+				uniqueamps.add(min);
+				variants[vindex].add(unsortedvals[min].get(0));
+				variants[vindex].add(unsortedvals[min].get(1));
+				vindex++;
+				min = 512;
+			}
+			ArrayList<Integer>[] setlut = new ArrayList[256];
+			for(int i=0; i<256; i++)
+			{
+				setlut[i] = new ArrayList<Integer>();
+			}
+			vindex = 57;
+			int setindex = 255;
+			while(setindex>=128)
+			{
+				if(setindex<=uniqueamps.get(vindex) && setindex>uniqueamps.get(vindex-1))
+				{
+					setlut[setindex].add(variants[vindex].get(0));
+					setlut[setindex].add(variants[vindex].get(1));
+					setindex--;
+				}
+				else
+				{
+					vindex--;
+				}
+			}
+			vindex = 0;
+			setindex = 0;
+			while(setindex<=127)
+			{
+				if(setindex>=uniqueamps.get(vindex) && setindex<uniqueamps.get(vindex+1))
+				{
+					setlut[setindex].add(variants[vindex].get(0));
+					setlut[setindex].add(variants[vindex].get(1));
+					setindex++;
+				}
+				else
+				{
+					vindex++;
+				}
+			}
 		try
 		{	
 			OutputStream fos = new FileOutputStream(("audio" + romsuff), true);
 			InputStream fis = new FileInputStream("audio.raw");
 			if(chans==2)
 			{
-				int pleft = 128;
-				int pright = 128;
+				//int pleft = 128;
+				//int pright = 128;
 				int cleft = 128;
 				int cright = 128;
-				int[] quantizedl = getBestValue(4, pleft, cleft, calcvals);
-				int[] quantizedr = getBestValue(4, pright, cright, calcvals);
+				//int[] quantizedl = getBestValue(4, pleft, cleft, calcvals); //commented these out because not using dynamic algorithm
+				//int[] quantizedr = getBestValue(4, pright, cright, calcvals);
+				int[] quantizedl = {setlut[cleft].get(0), setlut[cleft].get(1)};
+				int[] quantizedr = {setlut[cright].get(0), setlut[cright].get(1)};
 				int[] outputs = new int[2];
 				outputs[0]=(((quantizedl[0]&0x0F)<<4)|(quantizedr[0]&0x0F)); 
 				outputs[1]=(((quantizedl[1]&0x0F)<<4)|(quantizedr[1]&0x0F));
-				fos.write(outputs[0]);
-				fos.write(outputs[1]);
+				//fos.write(outputs[0]);
+				//fos.write(outputs[1]);
 				while((cleft=fis.read())!=-1)
 				{
 					cright=fis.read();
-					quantizedl = getBestValue(quantizedl[0], pleft, cleft, calcvals);
-					quantizedr = getBestValue(quantizedr[0], pright, cright, calcvals);
+					//quantizedl = getBestValue(quantizedl[0], pleft, cleft, calcvals);
+					quantizedl[0] = setlut[cleft].get(0);
+					quantizedl[1] = setlut[cleft].get(1);
+					//quantizedr = getBestValue(quantizedr[0], pright, cright, calcvals);
+					quantizedr[0] = setlut[cright].get(0); 
+					quantizedr[1] = setlut[cright].get(1);
 					outputs[0] = (((quantizedl[0]&0x0F)<<4)|(quantizedr[0]&0x0F));
 					outputs[1] = (((quantizedl[1]&0x0F)<<4)|(quantizedr[1]&0x0F));
 					fos.write(outputs[0]);
 					fos.write(outputs[1]);
-					pleft = cleft;
-					pright = cright;
+					//pleft = cleft;
+					//pright = cright;
 				}
 				fos.close();
 				fis.close();
 			}
 			else
 			{
-				int psamp = 128;
+				//int psamp = 128;
 				int csamp = 128;
-				int[] quantized = getBestValue(4, psamp, csamp, calcvals);
+				//int[] quantized = getBestValue(4, psamp, csamp, calcvals);
+				int[] quantized = {setlut[csamp].get(0), setlut[csamp].get(1)};
 				int outputm = ((quantized[0]<<4)|(quantized[1]&0x0F));
-				fos.write(outputm);
+				//fos.write(outputm);
 				while((csamp=fis.read())!=-1)
 				{
-					quantized = getBestValue(quantized[0], psamp, csamp, calcvals);
+					//quantized = getBestValue(quantized[0], psamp, csamp, calcvals);
+					quantized[0] = setlut[csamp].get(0);
+					quantized[1] = setlut[csamp].get(1);
 					outputm = ((quantized[0]<<4)|(quantized[1]&0x0F));
 					fos.write(outputm);
-					psamp = csamp;
+					//psamp = csamp;
 				}
 				fos.close();
 				fis.close();
@@ -399,7 +652,7 @@ public class encoder
 			ex.printStackTrace();
 		}
 		}
-		else
+		else //I'm still mad about how janky GB mode makes the sound behavior, just because it's half the speed of the GBC... clocking is janky
 		{
 			try{	
 				OutputStream fos = new FileOutputStream(("audio" + romsuff), true);

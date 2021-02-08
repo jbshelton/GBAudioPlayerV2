@@ -71,4 +71,4 @@ While the encoder is working, the window should stop responding\. This is becaus
 
 ### Congrats\! You should now have an audio file that's playable on a real Gameboy\!
 At this time original GB compatibility is broken because of differences in audio timing that requires different code to configure properly\.
-Fixes will come soon\!
+Fixes will come\.\.\. at some point\.
