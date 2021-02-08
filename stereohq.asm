@@ -43,7 +43,7 @@ Start:
 	ld sp, $FFFF
 	ld hl, $4000
 	ld bc, $0001
-	ld e, $02
+	ld e, $0F
 	xor a
 	ldh [rNR10], a
 	ld a, $12
@@ -79,11 +79,11 @@ waitforInt:
 StereoHQ:
 	ld a, [hli]
 	ld d, a
-	or $0F
+	or e
 	ldh [rNR12], a 
 	ld a, d
 	swap a
-	or $0F
+	or e
 	ldh [rNR22], a 
 	ld a, $80
 	ldh [rNR14], a 
