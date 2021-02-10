@@ -2,7 +2,7 @@ INCLUDE "hardware.inc"
 
 SECTION "Timer interrupt", ROM0[$50]
 TimerInterrupt:
-    call StereoHQ
+    jp StereoHQ
 	nop
 	nop
 	nop
@@ -40,7 +40,6 @@ Start:
 	nop
 	xor a
 	ldh [rIE], a
-	ld sp, $FFFF
 	ld hl, $4000
 	ld bc, $0001
 	ld e, $0F
@@ -48,23 +47,23 @@ Start:
 	ldh [rNR10], a
 	ld a, $12
 	ldh [rNR51], a
-	ld a, $8F
+	ld a, $F0
 	ldh [rNR12], a
 	ldh [rNR22], a
-	xor a
+	ld a, $80
 	ldh [rNR13], a
 	ldh [rNR23], a
 	ld a, $C0
 	ldh [rNR11], a
 	ldh [rNR21], a
-	ld a, $80
+	ld a, $87
 	ldh [rNR14], a
 	ldh [rNR24], a
 	ld a, $77
 	ldh [rNR50], a
 	ld a, 000 ;timer divider
 	ldh [rTMA], a
-	ld a, %00000110
+	ld a, %00000101
 	ldh [rTAC], a
 	ld a, $04
 	ldh [rIE], a
@@ -91,7 +90,7 @@ StereoHQ:
 	ld a, [hli]
 	ldh [rNR50], a
 	bit 7, h
-	jr z, sampleEndStereoHQ
+	jr z, sampleEnd
 	ld h, $40
 	inc bc
 	ld a, c
@@ -99,9 +98,8 @@ StereoHQ:
 	ld a, b
 	ld [$3000], a
 
-sampleEndStereoHQ:
-	ld sp, $FFFF
-	ei
+sampleEnd:
+	reti
 
 lockup:
 	nop

@@ -1,11 +1,12 @@
 /*
-Gameboy Audio Encoder 2.0, Java encoder build 2.5, 2/8/2021
+Gameboy Audio Encoder 2.0, Java encoder build 2.6, 2/9/2021
 Made by Jackson Shelton
 See README for OS-dependent(?) changes for command line and
 how to compile for your system.
 
-Replaced amplitude choosing algorithm with an arguably much
-better fixed lookup table
+Quantization for legacy lo-fi mode has been fixed, and support
+for both legacy and HQ now spands across both original GB
+and GBC
 */
 
 import java.util.*;
@@ -25,11 +26,25 @@ public class encoder
 		{
 			if(numchans==1)
 			{
-				mainsource = "monogb.asm";
+				if(mode==0)
+				{	
+					mainsource = "monogb.asm";
+				}
+				else
+				{
+					mainsource = "monogbhq.asm";
+				}
 			}
 			else
 			{
-				mainsource = "stereogb.asm";
+				if(mode==0)
+				{
+					mainsource = "stereogb.asm";
+				}
+				else
+				{
+					mainsource = "stereogbhq.asm";
+				}
 			}
 		}
 		else
@@ -332,65 +347,61 @@ public class encoder
 		output[1] = lut[currsamp].get((bestindex*2)+1);
 		return output;
 	}
-	public static int quantize(int sample) //GB mode is totally broken because of hardware shit, so unfortunately I can't use this! ):<
+	public static int quantize(int sample) //I got legacy mode working, happy days (:
 	{
-		if(sample>0 && sample <=16)
+		if(sample>0 && sample <=17)
 		{
 			return 1;
 		}
-		if(sample>16 && sample<=33)
+		if(sample>17 && sample<=35)
 		{
 			return 2;
 		}
-		if(sample>33 && sample<=50)
+		if(sample>35 && sample<=53)
 		{
 			return 3;
 		}
-		if(sample>51 && sample<=67)
+		if(sample>53 && sample<=72)
 		{
 			return 4;
 		}
-		if(sample>67 && sample<=84)
+		if(sample>72 && sample<=90)
 		{
 			return 5;
 		}
-		if(sample>84 && sample<=101)
+		if(sample>90 && sample<=108)
 		{
 			return 6;
 		}
-		if(sample>101 && sample<=118)
+		if(sample>108 && sample<=127)
 		{
 			return 7;
 		}
-		if(sample>118 && sample<=135)
+		if(sample>127 && sample<=145)
 		{
 			return 8;
 		}
-		if(sample>135 && sample<=152)
+		if(sample>145 && sample<=163)
 		{
 			return 9;
 		}
-		if(sample>152 && sample<=169)
+		if(sample>163 && sample<=181)
 		{
 			return 10;
 		}
-		if(sample>169 && sample<=186)
+		if(sample>181 && sample<=200)
 		{
 			return 11;
 		}
-		if(sample>186 && sample<=203)
+		if(sample>200 && sample<=218)
 		{
 			return 12;
 		}
-		if(sample>203 && sample<=220)
+		if(sample>218 && sample<=236)
 		{
 			return 13;
 		}
-		if(sample>220 && sample<=237)
-		{
-			return 14;
-		}
-		return 15;
+		return 14;
 	}
 	public static void main(String args[])
 	{
@@ -412,7 +423,7 @@ public class encoder
 			sysID = "-C";
 		}
 		createHeader(system);
-		if(system==1)
+		if(mode==1)
 		{
 			/*
 			ArrayList<Integer>[] calcvals = new ArrayList[256];
@@ -652,7 +663,7 @@ public class encoder
 			ex.printStackTrace();
 		}
 		}
-		else //I'm still mad about how janky GB mode makes the sound behavior, just because it's half the speed of the GBC... clocking is janky
+		else
 		{
 			try{	
 				OutputStream fos = new FileOutputStream(("audio" + romsuff), true);

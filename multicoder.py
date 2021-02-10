@@ -1,9 +1,8 @@
-#Gameboy Audio Encoder, Version 2.0, GUI build 1.1, 2/6/2021
+#Gameboy Audio Encoder, Version 2.0, GUI build 1.2, 2/9/2021
 #Made by Jackson Shelton
 #
-#Disclaimer: this is probably some of the most spaghetti Python
-#code ever, I literally built this entire thing in 2 days (which
-#were also spent learning how to code in Python in the first place!)
+#Added support for proper legacy mode (no longer broken,)
+#as well as HQ mode for the original GB (that works somehow.)
 
 import tkinter as tk
 from tkinter import *
@@ -48,18 +47,11 @@ def fchooser():
 		chanbtn0.select()
 		chanbtn1.config(state="disabled")
 	calcrate()
-
-def syschooser():
-	if sysoption.get() == 0:
-		modebtn1.deselect()
-		modebtn0.select()
-		modebtn1.config(state="disabled")
-	else:
-		modebtn1.config(state="normal")
-	calcrate()
 		
 
 def makerom():
+	global aud_channels
+	aud_channels = chanoption.get()
 	if len(sratelabel.curselection()) == 0:
 		execbtn.flash()
 	else:
@@ -89,21 +81,28 @@ def calcrate():
 	l_of_divs.clear()
 	compat_rates.clear()
 	sratelabel.delete(0, END)
-	for x in range(3, 17):
+	masterclk = 524288
+	rangemin = 12
+	if sysoption.get() == 0:
+		masterclk = 262144
+		rangemin = 8
+		if chanoption.get() == 2:
+			if modeoption.get() == 1:
+				rangemin = 9
+			else:
+				rangemin = 8
+	for x in range(rangemin, 65):
 		if (chanoption.get() == 1 and modeoption.get() == 1) or (chanoption.get() == 2 and modeoption.get() == 0):
-			calsize = ((131072/x) * len_in_seconds)
+			calsize = ((masterclk/x) * len_in_seconds)
 		if chanoption.get() == 1 and modeoption.get() == 0:
-			calsize = (((131072/x)/2) * len_in_seconds)
+			calsize = (((masterclk/x)/2) * len_in_seconds)
 		if chanoption.get() == 2 and modeoption.get() == 1:
-			calsize = ((131072/x) * len_in_seconds * 2)
+			calsize = ((masterclk/x) * len_in_seconds * 2)
 		if calsize > (8388608-16384):
 			pass
 		else:
-			compat_rates.append(round(131072/x))
-			if sysoption.get() == 0:
-				l_of_divs.append(256-(x*2))
-			if sysoption.get() == 1:
-				l_of_divs.append(256-x)
+			compat_rates.append(round(masterclk/x))
+			l_of_divs.append(256-x)
 	for rate in compat_rates:
 		sratelabel.insert(END, rate)
 	
@@ -127,8 +126,8 @@ fcl = Label(fcframe, relief="sunken", textvariable=fname)
 fcb = Button(fcframe, text="Choose audio file...", command=fchooser)
 fcb.grid(row=0, column=1)
 fcl.grid(row=0, column=0)
-sysbtn0 = Radiobutton(cfgframe, text="GB", variable=sysoption, value=0, command=syschooser)
-sysbtn1 = Radiobutton(cfgframe, text="GBC", variable=sysoption, value=1, command=syschooser)
+sysbtn0 = Radiobutton(cfgframe, text="GB", variable=sysoption, value=0, command=calcrate)
+sysbtn1 = Radiobutton(cfgframe, text="GBC", variable=sysoption, value=1, command=calcrate)
 sysbtn0.grid(row=0, column=0)
 sysbtn1.grid(row=1, column=0)
 sysbtn1.deselect()

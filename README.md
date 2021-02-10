@@ -1,24 +1,29 @@
 # GBAudioPlayerV2
-Version 2\.0 of the incredible Gameboy Audio Player, now with a GUI and some more features\!
+Version 2\.0 of the incredible Gameboy Audio Player, now with a GUI and some more features\! **\(\+Patch 2\.1\)**
 
-#### What this new version is
-I made significant improvements to both the source assembly code and the Java encoder program, as well as shoving in a brand\-new easy\-to\-use graphical interface for all of it\!
+#### What is GBAudioPlayerV2?
+I made significant improvements to both the original (Version 1.0) source assembly code and the Java encoder program, as well as shoving in a brand\-new easy\-to\-use graphical interface for all of it\! Listen to music on \(almost\) any Gameboy\!
 
 ---
 
 #### Improvements/fixes to past issues
 - Not \(completely\) dependent on the command line anymore
-- You don't have to use Audacity or a hex editor to put the audio in the ROM file
+- You don't have to use Audacity or a hex editor to put the audio in the ROM file \(though I recommend putting it through Audacity at least to amplify it, since I don't know how to do it in FFMPEG effectively \(yet\)\)
 - Audio encodes directly into the ROM file to minimize encoding time
+
+#### Changes in patch 2\.1 \(notable and important\)
+- Fixed legacy encoding for GB and GBC
+- Added HQ support for original GB
+- Some optimization all around
 
 ---
 
-#### New features
+#### Features
 - One single interface to rule them all\!
 - Selection of various sample rates
 - Configuration for both the original Gameboy and Gameboy Color
 - Select from stereo/mono, and auto mono configuration for input audio
-- 2 different encoding formats supported for GBC: Legacy and HQ \(covered later\)
+- 2 different encoding formats supported: Legacy and HQ \(covered later\)
 
 ---
 
@@ -59,9 +64,9 @@ Click on the **Choose audio file\.\.\.** button, and choose the audio file you w
 #### Using the GUI and description
 Here's an overview of the options you can choose from:
 - Sample rate\- the box in the middle of the GUI has various sample rates that you can choose from that are calculated based on the other options you choose\. Keep in mind that some higher rates may not work on the original Gameboy due to speed limitations\.
-- System\- choose from either Gameboy \(GB\) or Gameboy Color \(GBC\)\. Despite the fact that the Gameboy Advance has Gameboy Color compatibility, the HQ mode special to GBC will NOT work properly because of how the sound mixing works on the GBA\. HQ mode is not compatible with the original Gameboy for the same reason\.
+- System\- choose from either Gameboy \(GB\) or Gameboy Color \(GBC\)\. Despite the fact that the Gameboy Advance has Gameboy Color compatibility, the HQ mode will NOT work properly because of how the sound mixing works on the GBA\. Keep in mind that choosing the original GB will restrict the sample rate, as it runs slower than the GBC\.
 - Channels\- choose from stereo or mono output\. Mono can reduce the ROM size if you want more audio on a single cartridge without sacrificing sample rate\. Mono input audio files force the output to mono so it doesn't take up unnecessary cartridge space\.
-- Encoding mode\- the Legacy mode is a lo\-fi mode that only uses the pulse volume registers for playing back audio\. The HQ mode, which only works on the Gameboy Color, uses the pulse volume registers in combination with the master volume registers to get a much wider range of amplitudes, which in turn makes the audio higher quality, but takes up more cartridge space, therefore reducing the sample rate\.
+- Encoding mode\- the Legacy mode is a lo\-fi mode that only uses the pulse volume registers for playing back audio, and should work on a Gameboy Advance\. The HQ mode uses the pulse volume registers in combination with the master volume registers to get a much wider range of amplitudes, which in turn makes the audio higher quality, but takes up more cartridge space, therefore reducing the sample rate\.
 
 When you've picked out all the settings you want, hit the **Make the ROM\!** button, and make sure to choose the directory of all the code, or else it won't work properly\.
 
@@ -70,5 +75,9 @@ When you've picked out all the settings you want, hit the **Make the ROM\!** but
 While the encoder is working, the window should stop responding\. This is because the Java encoder takes up the CPU processing the window would otherwise use\. When it's done encoding, the window should be back to normal, and depending on the system you chose, there should be either an **audio\.gb** or **audio\.gbc** file\.
 
 ### Congrats\! You should now have an audio file that's playable on a real Gameboy\!
-At this time original GB compatibility is broken because of differences in audio timing that requires different code to configure properly\.
-Fixes will come\.\.\. at some point\.
+
+---
+
+## Fixes that might need to be implemented
+- Stall the pulses more both on GB and GBC to eliminate occasional noise that isn't significant but kind of strange?
+- Tweak the Python size calculation algorithm? \(Output sizes may not be correct for whatever reason\)
