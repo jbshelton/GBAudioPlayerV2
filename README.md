@@ -11,6 +11,8 @@ I made significant improvements to both the original (Version 1.0) source assemb
 - You don't have to use Audacity or a hex editor to put the audio in the ROM file \(though I recommend putting it through Audacity at least to amplify it, since I don't know how to do it in FFMPEG effectively \(yet\)\)
 - Audio encodes directly into the ROM file to minimize encoding time
 
+---
+
 #### Changes in patch 2\.1 \(notable and important\)
 - Fixed legacy encoding for GB and GBC
 - Added HQ support for original GB
@@ -33,6 +35,7 @@ You still have to have various things installed on your system\. There's tutoria
 - Java \(version 8 or above, see note\)
 - RGBDS \(Rednex Game Boy Development System\)
 - FFMPEG
+
 And if you're running Windows, preferrably:
 - WSL \(Windows Subsystem for Linux\)
 
