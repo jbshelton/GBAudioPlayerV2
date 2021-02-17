@@ -78,14 +78,16 @@ MonoGBHQ:
 	ld d, a
 	or e
 	ldh [rNR12], a 
-    ld a, $80
-    ldh [rNR14], a
 	ld a, d
 	swap a
 	and $F0
 	ld d, a
 	swap d
 	or d
+    ld d, a
+    ld a, $80
+    ldh [rNR14], a
+    ld a, d
 	ldh [rNR50], a
 	bit 7, h
 	jr z, sampleEnd

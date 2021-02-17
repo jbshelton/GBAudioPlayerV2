@@ -85,6 +85,10 @@ MonoHQ:
 	ld d, a
 	swap d
 	or d
+	ld d, a
+	ld a, $80
+	ldh [rNR14], a
+	ld a, d
 	ldh [rNR50], a
 	bit 7, h
 	jr z, sampleEnd
